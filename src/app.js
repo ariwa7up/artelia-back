@@ -14,7 +14,37 @@ const payoutWebhookController = require('./controllers/payoutWebhookController')
 const app = express();
 
 app.use(helmet());
-app.use(cors({ origin: config.frontendUrl, credentials: true }));
+//app.use(cors({ origin: config.frontendUrl, credentials: true }));
+// 1. CORS MUST BE FIRST to handle preflight OPTIONS requests properly
+const allowedOrigins = [
+    'http://localhost:5500',
+    'http://localhost:5501',
+    'http://localhost:3000',
+    'http://127.0.0.1:5500',
+    'http://127.0.0.1:5501',
+    'http://127.0.0.1:5502',
+    'https://rejoicefuturebanking.vercel.app',
+    'rejoicefuturebanking.vercel.app',
+    'https://your-frontend.netlify.app',
+    'null' // Required for local file:// testing sometimes
+];
+
+app.use(cors({
+    origin: function(origin, callback) {
+        // Allow requests with no origin (like mobile apps, curl, or Postman)
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.indexOf(origin) === -1) {
+            const msg = 'The CORS policy does not allow access from this origin.';
+            return callback(new Error(msg), false);
+        }
+        return callback(null, true);
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(morgan(config.env === 'development' ? 'dev' : 'combined'));
 app.use(cookieParser());
 
