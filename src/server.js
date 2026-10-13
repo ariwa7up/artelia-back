@@ -12,3 +12,5 @@ process.on('SIGINT', () => server.close(() => process.exit(0)));
 process.on('unhandledRejection', (reason) => {
   console.error('Unhandled promise rejection:', reason);
 });
+
+module.exports = app;
